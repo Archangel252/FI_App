@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      # Use variable for port mapping if defined, otherwise default to 8000
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/code # Mount local code for development
+    # Override the default command to enable auto-reload for development
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Pass the API URL (with /api path) as a build argument from the .env variable
+        - NEXT_PUBLIC_API_URL=${BACKEND_INTERNAL_URL}/api
+    ports:
+      # Use variable for port mapping if defined, otherwise default to 3000
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app # Mount local code for development
+      - /app/node_modules # Don't mount local node_modules
+      - /app/.next # Don't mount local .next build artifacts
+    depends_on:
+      - backend
+    environment:
+      # Ensure Next.js uses polling for file changes in Docker
+      - WATCHPACK_POLLING=true
+      # Set runtime env var (with /api path) from the .env variable
+      - NEXT_PUBLIC_API_URL=${BACKEND_INTERNAL_URL}/api
+    # Override the default command to run the development server
+    command: npm run dev 
