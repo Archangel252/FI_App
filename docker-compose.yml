@@ -8,6 +8,10 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/code # Mount local code for development
+    # Pass environment variables from the root .env file
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
     # Override the default command to enable auto-reload for development
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 

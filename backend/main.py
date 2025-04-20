@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from database.managers.supabase import SupabaseManager
 app = FastAPI()
 
 # Allow CORS for the frontend
@@ -19,4 +19,7 @@ app.add_middleware(
 
 @app.get("/api/message")
 def read_root():
-    return {"message": "Hello from FastAPI Backend!"} 
+    supabase_manager = SupabaseManager()
+    supabase_manager.connect()
+    results =   supabase_manager.execute_query("SELECT * FROM messages")
+    return {"message": f"Hello from FastAPI Backend! {results}", "results": results} 
